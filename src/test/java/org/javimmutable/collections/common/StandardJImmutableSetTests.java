@@ -47,7 +47,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
@@ -85,7 +84,7 @@ public final class StandardJImmutableSetTests
 
         jet = jet.delete(10);
         assertEquals(0, jet.size());
-        assertEquals(true, template.isEmpty());
+        assertEquals(true, jet.isEmpty());
         assertEquals(false, jet.contains(10));
 
         final List<Integer> values = Arrays.asList(1, 2, 3, 4);
