@@ -41,58 +41,60 @@ import org.javimmutable.collections.array.trie32.TrieArray;
 
 import javax.annotation.Nonnull;
 
-public class JImmutableBooleanTrieBitmap
+/*
+ * This implementation is more efficient than JImmutableBooleanTrieBitmap, because each
+ * element in the array can hold 64 different bit instead of just one. This is done by
+ * shifting the index to set/get by 6 to index into the array, and then setting or checking
+ * individual bits in the Long stored at that element. *
+ */
+public class JImmutableLongTrieBitmap
     implements JImmutableBitmap
 {
-    JImmutableArray<Boolean> array;
+    JImmutableArray<Long> array;
 
-    private static final JImmutableBooleanTrieBitmap EMPTY = new JImmutableBooleanTrieBitmap(TrieArray.<Boolean>of());
+    private static final JImmutableLongTrieBitmap EMPTY = new JImmutableLongTrieBitmap(TrieArray.<Long>of());
 
-    private JImmutableBooleanTrieBitmap(JImmutableArray<Boolean> array)
+    private JImmutableLongTrieBitmap(JImmutableArray<Long> array)
     {
         this.array = array;
     }
 
-    public static JImmutableBooleanTrieBitmap of()
+    public static JImmutableLongTrieBitmap of()
     {
         return EMPTY;
     }
 
     @Nonnull
     @Override
-    public JImmutableBooleanTrieBitmap insert(int index)
+    public JImmutableBitmap insert(int index)
     {
-        return (contains(index)) ? this : new JImmutableBooleanTrieBitmap(array.assign(index, true));
-    }
-
-    @Nonnull
-    public JImmutableBooleanTrieBitmap delete(int index)
-    {
-        return (contains(index)) ? new JImmutableBooleanTrieBitmap(array.delete(index)) : this;
+        JImmutableArray<Long> newArray = array;
+        int arrayIndex = index >>> 6;
+        long mask = 1 << (index & 0x3f);
+        Long arrayElement = newArray.get(arrayIndex);
+        if (arrayElement == null) { //doesn't have any element for index
+            newArray = newArray.assign(arrayIndex, mask);
+        } else if ((arrayElement & mask) == 0) { //does not contain index
+            newArray = newArray.assign(arrayIndex, arrayElement | mask);
+        }
+        return (newArray != array) ? new JImmutableLongTrieBitmap(newArray) : this;
     }
 
     @Override
     public boolean contains(int index)
     {
-        return array.find(index).isFilled();
+        int arrayIndex = index >>> 6;
+        long mask = 1 << (index & 0x3f);
+        Long arrayElement = array.get(arrayIndex);
+        return (arrayElement != null) && ((mask & arrayElement) != 0);
     }
 
-
-    public int size()
-    {
-        return array.size();
-    }
-
-    public boolean isEmpty()
-    {
-        return array.isEmpty();
-    }
-
+    @Override
     public void checkInvariants()
     {
         for (int index : array.keysCursor()) {
-            if (array.get(index) == null || !array.get(index)) {
-                throw new IllegalStateException(String.format("array contains non-true value. Found %s at %d%n",
+            if (array.get(index) == null || array.get(index) == (long)0) {
+                throw new IllegalStateException(String.format("array contains zero. Found %s at %d%n",
                                                               array.get(index), index));
 
             }

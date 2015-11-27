@@ -33,28 +33,17 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+
 package org.javimmutable.collections.bitmap;
 
-import org.javimmutable.collections.JImmutableBitmap;
-import static junit.framework.Assert.assertEquals;
+import junit.framework.TestCase;
 
-
-public class StandardJImmutableBitmapTests
+public class JImmutableLongTrieBitmapTest
+    extends TestCase
 {
-    private StandardJImmutableBitmapTests()
+    public void test()
     {
-    }
-
-    public static void verifyBitmap(JImmutableBitmap template)
-    {
-        template.checkInvariants();
-
-        JImmutableBitmap bitmap = template;
-        assertEquals(false, bitmap.contains(10));
-        bitmap = bitmap.insert(10);
-        assertEquals(false, bitmap == template);
-        assertEquals(true, bitmap.contains(10));
-        assertEquals(bitmap, bitmap.insert(10));
-        bitmap.checkInvariants();
+        JImmutableLongTrieBitmap empty = JImmutableLongTrieBitmap.of();
+        StandardJImmutableBitmapTests.verifyBitmap(empty);
     }
 }

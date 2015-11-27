@@ -41,10 +41,4 @@ public interface JImmutableBitmap
     JImmutableBitmap insert(int index);
 
     boolean contains(int index);
-
-    JImmutableBitmap delete(int index);
-
-    boolean isEmpty();
-
-    int size();
 }

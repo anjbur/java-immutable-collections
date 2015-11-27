@@ -42,6 +42,29 @@ public class JImmutableBooleanTrieBitmapTest
 {
     public void test()
     {
-        StandardJImmutableBitmapTests.verifyBitmap(JImmutableBooleanTrieBitmap.of());
+        JImmutableBooleanTrieBitmap empty = JImmutableBooleanTrieBitmap.of();
+        JImmutableBooleanTrieBitmap bitmap = empty;
+        StandardJImmutableBitmapTests.verifyBitmap(bitmap);
+
+        assertEquals(0, bitmap.size());
+        assertEquals(true, bitmap.isEmpty());
+        bitmap.checkInvariants();
+
+        bitmap = empty;
+        assertEquals(false, bitmap.contains(10));
+        bitmap = bitmap.insert(10);
+        assertEquals(false, bitmap == empty);
+        assertEquals(1, bitmap.size());
+        assertEquals(false, bitmap.isEmpty());
+        assertEquals(true, bitmap.contains(10));
+        assertEquals(bitmap, bitmap.insert(10));
+        bitmap.checkInvariants();
+
+        bitmap = bitmap.delete(10);
+        assertEquals(0, bitmap.size());
+        assertEquals(true, bitmap.isEmpty());
+        assertEquals(false, bitmap.contains(10));
+        bitmap.checkInvariants();
     }
+
 }
