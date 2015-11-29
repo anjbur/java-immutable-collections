@@ -35,69 +35,86 @@
 
 package org.javimmutable.collections.bitmap;
 
-import org.javimmutable.collections.JImmutableArray;
-import org.javimmutable.collections.JImmutableBitmap;
-import org.javimmutable.collections.array.trie32.TrieArray;
 
-import javax.annotation.Nonnull;
-import javax.annotation.concurrent.Immutable;
+import org.javimmutable.collections.Holder;
 
-@Immutable
-public class JImmutableBooleanTrieBitmap
-    implements JImmutableBitmap
+public class FullBranchBitmapNode
+        extends BitmapNode
 {
-    JImmutableArray<Boolean> array;
+    private final int shift;
+    private final BitmapNode[] enBitmaps;
 
-    private static final JImmutableBooleanTrieBitmap EMPTY = new JImmutableBooleanTrieBitmap(TrieArray.<Boolean>of());
-
-    private JImmutableBooleanTrieBitmap(JImmutableArray<Boolean> array)
+    FullBranchBitmapNode(int shift,
+                         BitmapNode[] enBitmaps)
     {
-        this.array = array;
+        this.shift = shift;
+        this.enBitmaps = enBitmaps;
     }
 
-    public static JImmutableBooleanTrieBitmap of()
-    {
-        return EMPTY;
-    }
-
-    @Nonnull
-    @Override
-    public JImmutableBooleanTrieBitmap insert(int index)
-    {
-        return (getValue(index)) ? this : new JImmutableBooleanTrieBitmap(array.assign(index, true));
-    }
-
-    @Nonnull
-    public JImmutableBooleanTrieBitmap delete(int index)
-    {
-        return (getValue(index)) ? new JImmutableBooleanTrieBitmap(array.delete(index)) : this;
-    }
 
     @Override
-    public boolean getValue(int index)
-    {
-        return array.find(index).isFilled();
-    }
-
-
-    public int size()
-    {
-        return array.size();
-    }
-
     public boolean isEmpty()
     {
-        return array.isEmpty();
+        return false;
     }
 
-    public void checkInvariants()
+    @Override
+    public boolean getValue(int shift,
+                            int index)
     {
-        for (int index : array.keysCursor()) {
-            if (array.get(index) == null || !array.get(index)) {
-                throw new IllegalStateException(String.format("array contains non-true value. Found %s at %d%n",
-                                                              array.get(index), index));
+        assert this.shift == shift;
+        final int childIndex = (index >>> shift) & 0x1f;
+        return enBitmaps[childIndex].getValue(shift - 5, index);
+    }
 
-            }
+    @Override
+    public Holder<Boolean> find(int shift,
+                                int index)
+    {
+        assert this.shift == shift;
+        final int childIndex = (index >>> shift) & 0x1f;
+        return enBitmaps[childIndex].find(shift - 5, index);
+    }
+
+
+    @Override
+    public BitmapNode assign(int shift,
+                             int index)
+    {
+        assert this.shift == shift;
+        final int childIndex = (index >>> shift) & 0x1f;
+        final BitmapNode child = enBitmaps[childIndex];
+        final BitmapNode newChild = child.assign(shift - 5, index);
+        if (newChild == child) {
+            return this;
+        } else {
+            return createUpdatedEnBitmaps(shift, childIndex, newChild);
         }
     }
+
+
+    @Override
+    public int getShift()
+    {
+        return shift;
+    }
+
+    @Override
+    public boolean isLeaf()
+    {
+        return false;
+    }
+
+
+    private BitmapNode createUpdatedEnBitmaps(int shift,
+                                              int childIndex,
+                                              BitmapNode newChild)
+    {
+        assert newChild.isLeaf() || (newChild.getShift() == (shift - 5));
+        BitmapNode[] newEnBitmaps = enBitmaps.clone();
+        newEnBitmaps[childIndex] = newChild;
+        return new FullBranchBitmapNode(shift, newEnBitmaps);
+    }
+
+
 }

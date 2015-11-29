@@ -35,69 +35,102 @@
 
 package org.javimmutable.collections.bitmap;
 
-import org.javimmutable.collections.JImmutableArray;
-import org.javimmutable.collections.JImmutableBitmap;
-import org.javimmutable.collections.array.trie32.TrieArray;
+import org.javimmutable.collections.Holder;
 
-import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
-public class JImmutableBooleanTrieBitmap
-    implements JImmutableBitmap
+public abstract class BitmapNode
 {
-    JImmutableArray<Boolean> array;
+    public static final int ROOT_SHIFT = 30;
 
-    private static final JImmutableBooleanTrieBitmap EMPTY = new JImmutableBooleanTrieBitmap(TrieArray.<Boolean>of());
+    public abstract boolean isEmpty();
 
-    private JImmutableBooleanTrieBitmap(JImmutableArray<Boolean> array)
+    public abstract boolean getValue(int shift,
+                                    int index);
+
+
+    public abstract Holder<Boolean> find(int shift,
+                                         int index);
+
+    public abstract BitmapNode assign(int shift,
+                                      int index);
+
+    public abstract int getShift();
+
+    public abstract boolean isLeaf();
+
+    public BitmapNode trimmedToMinimumDepth()
     {
-        this.array = array;
+        return this;
     }
 
-    public static JImmutableBooleanTrieBitmap of()
+    public BitmapNode paddedToMinimumDepthForShift(int shift)
     {
-        return EMPTY;
-    }
-
-    @Nonnull
-    @Override
-    public JImmutableBooleanTrieBitmap insert(int index)
-    {
-        return (getValue(index)) ? this : new JImmutableBooleanTrieBitmap(array.assign(index, true));
-    }
-
-    @Nonnull
-    public JImmutableBooleanTrieBitmap delete(int index)
-    {
-        return (getValue(index)) ? new JImmutableBooleanTrieBitmap(array.delete(index)) : this;
-    }
-
-    @Override
-    public boolean getValue(int index)
-    {
-        return array.find(index).isFilled();
-    }
-
-
-    public int size()
-    {
-        return array.size();
-    }
-
-    public boolean isEmpty()
-    {
-        return array.isEmpty();
-    }
-
-    public void checkInvariants()
-    {
-        for (int index : array.keysCursor()) {
-            if (array.get(index) == null || !array.get(index)) {
-                throw new IllegalStateException(String.format("array contains non-true value. Found %s at %d%n",
-                                                              array.get(index), index));
-
-            }
+        BitmapNode node = this;
+        int nodeShift = node.getShift();
+        while (nodeShift < shift) {
+            nodeShift += 5;
+            node = SingleBranchBitmapNode.forBranchIndex(nodeShift, 0, node);
         }
+        return node;
+    }
+
+    public static BitmapNode of()
+    {
+        return EmptyBitmapNode.instance();
+    }
+
+    public static int shiftForIndex(int index)
+    {
+        switch (Integer.numberOfLeadingZeros(index)) {
+        case 0:
+        case 1:
+            return 30;
+
+        case 2:
+        case 3:
+        case 4:
+        case 5:
+        case 6:
+            return 25;
+
+        case 7:
+        case 8:
+        case 9:
+        case 10:
+        case 11:
+            return 20;
+
+        case 12:
+        case 13:
+        case 14:
+        case 15:
+        case 16:
+            return 15;
+
+        case 17:
+        case 18:
+        case 19:
+        case 20:
+        case 21:
+            return 10;
+
+        case 22:
+        case 23:
+        case 24:
+        case 25:
+        case 26:
+            return 5;
+
+        case 27:
+        case 28:
+        case 29:
+        case 30:
+        case 31:
+        case 32:
+            return 0;
+        }
+        throw new IllegalArgumentException();
     }
 }

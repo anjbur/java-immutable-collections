@@ -40,6 +40,7 @@ import org.javimmutable.collections.JImmutableBitmap;
 import org.javimmutable.collections.array.trie32.TrieArray;
 
 import javax.annotation.Nonnull;
+import javax.annotation.concurrent.Immutable;
 
 /*
  * This implementation is more efficient than JImmutableBooleanTrieBitmap, because each
@@ -47,6 +48,7 @@ import javax.annotation.Nonnull;
  * shifting the index to set/get by 6 to index into the array, and then setting or checking
  * individual bits in the Long stored at that element. *
  */
+@Immutable
 public class JImmutableLongTrieBitmap
     implements JImmutableBitmap
 {
@@ -81,7 +83,7 @@ public class JImmutableLongTrieBitmap
     }
 
     @Override
-    public boolean contains(int index)
+    public boolean getValue(int index)
     {
         int arrayIndex = index >>> 6;
         long mask = 1 << (index & 0x3f);

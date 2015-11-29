@@ -40,5 +40,5 @@ public interface JImmutableBitmap
 {
     JImmutableBitmap insert(int index);
 
-    boolean contains(int index);
+    boolean getValue(int index);
 }

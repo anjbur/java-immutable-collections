@@ -35,69 +35,44 @@
 
 package org.javimmutable.collections.bitmap;
 
-import org.javimmutable.collections.JImmutableArray;
+
 import org.javimmutable.collections.JImmutableBitmap;
-import org.javimmutable.collections.array.trie32.TrieArray;
+import org.javimmutable.collections.common.MutableDelta;
 
-import javax.annotation.Nonnull;
-import javax.annotation.concurrent.Immutable;
-
-@Immutable
-public class JImmutableBooleanTrieBitmap
+public class TrieBitmap
     implements JImmutableBitmap
 {
-    JImmutableArray<Boolean> array;
+    private static final TrieBitmap EMPTY = new TrieBitmap(BitmapNode.of());
+    private final BitmapNode root;
 
-    private static final JImmutableBooleanTrieBitmap EMPTY = new JImmutableBooleanTrieBitmap(TrieArray.<Boolean>of());
-
-    private JImmutableBooleanTrieBitmap(JImmutableArray<Boolean> array)
+    private TrieBitmap(BitmapNode root)
     {
-        this.array = array;
+        this.root = root;
     }
 
-    public static JImmutableBooleanTrieBitmap of()
+    public static TrieBitmap of()
     {
         return EMPTY;
     }
 
-    @Nonnull
-    @Override
-    public JImmutableBooleanTrieBitmap insert(int index)
+    public JImmutableBitmap insert(int index)
     {
-        return (getValue(index)) ? this : new JImmutableBooleanTrieBitmap(array.assign(index, true));
+        BitmapNode newRoot = root.paddedToMinimumDepthForShift(BitmapNode.shiftForIndex(index));
+        newRoot = newRoot.assign(newRoot.getShift(), index);
+        return (newRoot == root) ? this: new TrieBitmap(newRoot);
     }
 
-    @Nonnull
-    public JImmutableBooleanTrieBitmap delete(int index)
-    {
-        return (getValue(index)) ? new JImmutableBooleanTrieBitmap(array.delete(index)) : this;
-    }
-
-    @Override
     public boolean getValue(int index)
     {
-        return array.find(index).isFilled();
-    }
-
-
-    public int size()
-    {
-        return array.size();
-    }
-
-    public boolean isEmpty()
-    {
-        return array.isEmpty();
+        if (root.getShift() < BitmapNode.shiftForIndex(index)) {
+            return false;
+        } else {
+            return root.getValue(root.getShift(), index);
+        }
     }
 
     public void checkInvariants()
     {
-        for (int index : array.keysCursor()) {
-            if (array.get(index) == null || !array.get(index)) {
-                throw new IllegalStateException(String.format("array contains non-true value. Found %s at %d%n",
-                                                              array.get(index), index));
 
-            }
-        }
     }
 }

@@ -35,69 +35,64 @@
 
 package org.javimmutable.collections.bitmap;
 
-import org.javimmutable.collections.JImmutableArray;
-import org.javimmutable.collections.JImmutableBitmap;
-import org.javimmutable.collections.array.trie32.TrieArray;
+import org.javimmutable.collections.Holder;
+import org.javimmutable.collections.Holders;
 
-import javax.annotation.Nonnull;
-import javax.annotation.concurrent.Immutable;
 
-@Immutable
-public class JImmutableBooleanTrieBitmap
-    implements JImmutableBitmap
+public class EmptyBitmapNode
+        extends BitmapNode
 {
-    JImmutableArray<Boolean> array;
+    private static final EmptyBitmapNode EMPTY = new EmptyBitmapNode();
 
-    private static final JImmutableBooleanTrieBitmap EMPTY = new JImmutableBooleanTrieBitmap(TrieArray.<Boolean>of());
-
-    private JImmutableBooleanTrieBitmap(JImmutableArray<Boolean> array)
-    {
-        this.array = array;
-    }
-
-    public static JImmutableBooleanTrieBitmap of()
+    @SuppressWarnings("unchecked")
+    static EmptyBitmapNode instance()
     {
         return EMPTY;
     }
 
-    @Nonnull
     @Override
-    public JImmutableBooleanTrieBitmap insert(int index)
-    {
-        return (getValue(index)) ? this : new JImmutableBooleanTrieBitmap(array.assign(index, true));
-    }
-
-    @Nonnull
-    public JImmutableBooleanTrieBitmap delete(int index)
-    {
-        return (getValue(index)) ? new JImmutableBooleanTrieBitmap(array.delete(index)) : this;
-    }
-
-    @Override
-    public boolean getValue(int index)
-    {
-        return array.find(index).isFilled();
-    }
-
-
-    public int size()
-    {
-        return array.size();
-    }
-
     public boolean isEmpty()
     {
-        return array.isEmpty();
+        return true;
     }
 
-    public void checkInvariants()
+    @Override
+    public boolean getValue(int shift,
+                           int index)
     {
-        for (int index : array.keysCursor()) {
-            if (array.get(index) == null || !array.get(index)) {
-                throw new IllegalStateException(String.format("array contains non-true value. Found %s at %d%n",
-                                                              array.get(index), index));
+        return false;
+    }
 
-            }
-        }
+    @Override
+    public Holder<Boolean> find(int shift,
+                                int index)
+    {
+        return Holders.of(false);
+    }
+
+
+    @Override
+    public BitmapNode assign(int shift,
+                             int index)
+    {
+        return LeafBitmapNode.of(shift, index);
+    }
+
+    @Override
+    public int getShift()
+    {
+        return 0;
+    }
+
+    @Override
+    public boolean isLeaf()
+    {
+        return true;
+    }
+
+    @Override
+    public BitmapNode paddedToMinimumDepthForShift(int shift)
+    {
+        return this;
     }
 }

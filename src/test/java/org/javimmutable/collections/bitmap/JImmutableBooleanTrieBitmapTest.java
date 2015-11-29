@@ -51,19 +51,19 @@ public class JImmutableBooleanTrieBitmapTest
         bitmap.checkInvariants();
 
         bitmap = empty;
-        assertEquals(false, bitmap.contains(10));
+        assertEquals(false, bitmap.getValue(10));
         bitmap = bitmap.insert(10);
         assertEquals(false, bitmap == empty);
         assertEquals(1, bitmap.size());
         assertEquals(false, bitmap.isEmpty());
-        assertEquals(true, bitmap.contains(10));
+        assertEquals(true, bitmap.getValue(10));
         assertEquals(bitmap, bitmap.insert(10));
         bitmap.checkInvariants();
 
         bitmap = bitmap.delete(10);
         assertEquals(0, bitmap.size());
         assertEquals(true, bitmap.isEmpty());
-        assertEquals(false, bitmap.contains(10));
+        assertEquals(false, bitmap.getValue(10));
         bitmap.checkInvariants();
     }
 

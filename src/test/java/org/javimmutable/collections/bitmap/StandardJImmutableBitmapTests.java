@@ -48,12 +48,11 @@ public class StandardJImmutableBitmapTests
     public static void verifyBitmap(JImmutableBitmap template)
     {
         template.checkInvariants();
-
         JImmutableBitmap bitmap = template;
-        assertEquals(false, bitmap.contains(10));
+        assertEquals(false, bitmap.getValue(10));
         bitmap = bitmap.insert(10);
         assertEquals(false, bitmap == template);
-        assertEquals(true, bitmap.contains(10));
+        assertEquals(true, bitmap.getValue(10));
         assertEquals(bitmap, bitmap.insert(10));
         bitmap.checkInvariants();
     }
