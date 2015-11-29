@@ -35,64 +35,15 @@
 
 package org.javimmutable.collections.bitmap;
 
-import org.javimmutable.collections.Holder;
-import org.javimmutable.collections.Holders;
+import junit.framework.TestCase;
 
-
-public class EmptyBitmapNode
-        extends BitmapNode
+public class TrieBitmapTest
+    extends TestCase
 {
-    private static final EmptyBitmapNode EMPTY = new EmptyBitmapNode();
-
-    @SuppressWarnings("unchecked")
-    static EmptyBitmapNode instance()
+    public void test()
     {
-        return EMPTY;
-    }
-
-    @Override
-    public boolean isEmpty()
-    {
-        return true;
-    }
-
-    @Override
-    public boolean getValue(int shift,
-                           int index)
-    {
-        return false;
-    }
-
-    @Override
-    public Holder<Boolean> find(int shift,
-                                int index)
-    {
-        return Holders.of(false);
-    }
-
-
-    @Override
-    public BitmapNode assign(int shift,
-                             int index)
-    {
-        return LeafBitmapNode.of(index);
-    }
-
-    @Override
-    public int getShift()
-    {
-        return 0;
-    }
-
-    @Override
-    public boolean isLeaf()
-    {
-        return true;
-    }
-
-    @Override
-    public BitmapNode paddedToMinimumDepthForShift(int shift)
-    {
-        return this;
+        TrieBitmap empty = TrieBitmap.of();
+        StandardJImmutableBitmapTests.verifyBitmap(empty);
+        StandardJImmutableBitmapTests.testRandom(empty);
     }
 }

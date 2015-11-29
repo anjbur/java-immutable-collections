@@ -37,7 +37,6 @@ package org.javimmutable.collections.bitmap;
 
 
 import org.javimmutable.collections.JImmutableBitmap;
-import org.javimmutable.collections.common.MutableDelta;
 
 public class TrieBitmap
     implements JImmutableBitmap
@@ -64,11 +63,7 @@ public class TrieBitmap
 
     public boolean getValue(int index)
     {
-        if (root.getShift() < BitmapNode.shiftForIndex(index)) {
-            return false;
-        } else {
-            return root.getValue(root.getShift(), index);
-        }
+        return root.getShift() >= BitmapNode.shiftForIndex(index) && root.getValue(root.getShift(), index);
     }
 
     public void checkInvariants()

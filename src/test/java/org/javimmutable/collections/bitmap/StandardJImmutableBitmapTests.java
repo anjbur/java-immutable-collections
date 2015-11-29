@@ -35,7 +35,13 @@
 
 package org.javimmutable.collections.bitmap;
 
+import junit.framework.AssertionFailedError;
 import org.javimmutable.collections.JImmutableBitmap;
+import org.javimmutable.collections.JImmutableSet;
+import org.javimmutable.collections.util.JImmutables;
+
+import java.util.Random;
+
 import static junit.framework.Assert.assertEquals;
 
 
@@ -49,11 +55,76 @@ public class StandardJImmutableBitmapTests
     {
         template.checkInvariants();
         JImmutableBitmap bitmap = template;
+        JImmutableSet<Integer> valuesAdded = JImmutables.set();
         assertEquals(false, bitmap.getValue(10));
         bitmap = bitmap.insert(10);
+        valuesAdded = valuesAdded.insert(10);
         assertEquals(false, bitmap == template);
-        assertEquals(true, bitmap.getValue(10));
+        verifyAddedValues(bitmap, valuesAdded);
         assertEquals(bitmap, bitmap.insert(10));
         bitmap.checkInvariants();
+
+        bitmap = bitmap.insert(20);
+        valuesAdded = valuesAdded.insert(20);
+        verifyAddedValues(bitmap, valuesAdded);
+
+        bitmap = bitmap.insert(1024);
+        valuesAdded = valuesAdded.insert(1024);
+        verifyAddedValues(bitmap, valuesAdded);
+
+        bitmap = bitmap.insert(2048);
+        valuesAdded = valuesAdded.insert(2048);
+        verifyAddedValues(bitmap, valuesAdded);
+/*
+        bitmap = bitmap.insert(32768);
+        valuesAdded = valuesAdded.insert(32768);
+        verifyAddedValues(bitmap, valuesAdded);
+
+        bitmap = bitmap.insert(33554432);
+        valuesAdded = valuesAdded.insert(33554432);
+        verifyAddedValues(bitmap, valuesAdded);
+
+        bitmap = bitmap.insert(1073741824);
+        valuesAdded = valuesAdded.insert(1073741824);
+        verifyAddedValues(bitmap, valuesAdded);*/
+
+        bitmap = bitmap.insert(-10);
+        valuesAdded = valuesAdded.insert(-10);
+        verifyAddedValues(bitmap, valuesAdded);
+
+        bitmap = bitmap.insert(-1073741824);
+        valuesAdded = valuesAdded.insert(-1073741824);
+        verifyAddedValues(bitmap, valuesAdded);
+    }
+
+    private static void verifyAddedValues(JImmutableBitmap bitmap,
+                                          JImmutableSet<Integer> valuesAdded)
+    {
+        for (Integer value : valuesAdded) {
+            try {
+                assertEquals(true, bitmap.getValue(value));
+            } catch (AssertionFailedError e) {
+                System.out.println("value : " + value);
+                throw e;
+            }
+        }
+    }
+
+    public static void testRandom(JImmutableBitmap template)
+    {
+        JImmutableBitmap bitmap = template;
+        JImmutableSet<Integer> valuesAdded = JImmutables.set();
+        Random random = new Random();
+        for (int i = 0; i < 200; i++) {
+            int index = random.nextInt();
+            bitmap = bitmap.insert(index);
+            valuesAdded = valuesAdded.insert(index);
+            try {
+                verifyAddedValues(bitmap, valuesAdded);
+            } catch (AssertionFailedError e) {
+                System.out.println("loop: " + i);
+                throw e;
+            }
+        }
     }
 }

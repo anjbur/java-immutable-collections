@@ -44,7 +44,7 @@ import javax.annotation.concurrent.Immutable;
 public class LeafBitmapNode
         extends BitmapNode
 {
-    private final int index;
+    private final int shiftedIndex; //25 bit integer
     private final long value;
     private final int shift;
 
@@ -52,10 +52,17 @@ public class LeafBitmapNode
                            long value,
                            int shift)
     {
-        this.index = index;
+        this.shiftedIndex = index >> 6;
         this.value = value;
         this.shift = shift;
     }
+
+    static LeafBitmapNode of(int index)
+    {
+        long value = 1 << (index & 0x3f);
+        return new LeafBitmapNode(index, value, shiftForIndex(index));
+    }
+
 
     static LeafBitmapNode of(int index,
                              long value)
@@ -75,7 +82,7 @@ public class LeafBitmapNode
                             int index)
     {
         assert shift >= 1;
-        if (this.index != index >> this.shift) {
+        if (this.shiftedIndex != (index >> 6)) {
             return false;
         } else {
             long bitmask = 1 << (index & 0x3f);
@@ -88,7 +95,7 @@ public class LeafBitmapNode
                                 int index)
     {
         assert shift >= 1;
-        if (this.index != index >> this.shift) {
+        if (this.shiftedIndex != index >> this.shift) {
             return Holders.of(false);
         } else {
             long bit = 1 << (index & 0x3f);
@@ -102,8 +109,8 @@ public class LeafBitmapNode
     public BitmapNode assign(int shift,
                              int index)
     {
-        assert shift >= -5;
-        if (this.index == index >>> 6) {
+        assert shift >= 1;
+        if (this.shiftedIndex == index >>> 6) {
             long bit = 1 << (index & 0x3f);
             if ((value & bit) != 0) {
                 return this;
@@ -112,7 +119,7 @@ public class LeafBitmapNode
             }
         } else {
             assert shift >= 0;
-            return SingleBranchBitmapNode.forIndex(shift, this.index, this).assign(shift, index);
+            return SingleBranchBitmapNode.forIndex(shift, this.shiftedIndex, this).assign(shift, index);
         }
     }
 
@@ -134,7 +141,7 @@ public class LeafBitmapNode
         if (this.shift >= shift) {
             return this;
         } else {
-            return SingleBranchBitmapNode.forIndex(shift, index, this);
+            return SingleBranchBitmapNode.forIndex(shift, shiftedIndex, this);
         }
     }
 
@@ -151,7 +158,7 @@ public class LeafBitmapNode
 
         LeafBitmapNode that = (LeafBitmapNode)o;
 
-        if (index != that.index) {
+        if (shiftedIndex != that.shiftedIndex) {
             return false;
         }
         if (shift != that.shift) {
@@ -168,7 +175,7 @@ public class LeafBitmapNode
     @Override
     public int hashCode()
     {
-        int result = index;
+        int result = shiftedIndex;
         result = 31 * result + getHashCode(value);
         result = 31 * result + shift;
         return result;
@@ -182,6 +189,6 @@ public class LeafBitmapNode
 
     private BitmapNode withValue(long newValue)
     {
-        return new LeafBitmapNode(index, newValue, shift);
+        return new LeafBitmapNode(shiftedIndex, newValue, shift);
     }
 }
