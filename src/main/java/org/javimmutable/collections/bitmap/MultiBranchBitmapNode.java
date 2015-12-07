@@ -114,7 +114,7 @@ public class MultiBranchBitmapNode
 
     @Override
     public boolean getValue(int shift,
-                    int index)
+                            int index)
     {
         assert this.shift == shift;
         final int bit = 1 << ((index >>> shift) & 0x1f);
@@ -130,7 +130,7 @@ public class MultiBranchBitmapNode
 
     @Override
     public Holder<Boolean> find(int shift,
-                          int index)
+                                int index)
     {
         assert this.shift == shift;
         final int bit = 1 << ((index >>> shift) & 0x1f);
@@ -285,7 +285,7 @@ public class MultiBranchBitmapNode
     @SuppressWarnings("unchecked")
     static <T> BitmapNode[] allocate(int size)
     {
-        return (BitmapNode[])new BitmapNode[size];
+        return new BitmapNode[size];
     }
 
     private static class IndexList

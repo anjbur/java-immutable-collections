@@ -42,8 +42,6 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public abstract class BitmapNode
 {
-    public static final int ROOT_SHIFT = 30;
-
     public abstract boolean isEmpty();
 
     public abstract boolean getValue(int shift,
@@ -91,7 +89,7 @@ public abstract class BitmapNode
         case 3:
         case 4:
         case 5:
-            return 25 + 6;
+            return 20 + 6;
 
         case 6:
         case 7:
@@ -127,7 +125,7 @@ public abstract class BitmapNode
         case 30:
         case 31:
         case 32:
-            return 0 + 6;
+            return 6;
         }
         throw new IllegalArgumentException();
     }

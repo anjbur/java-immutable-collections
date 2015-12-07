@@ -37,14 +37,32 @@ package org.javimmutable.collections.bitmap;
 
 import junit.framework.TestCase;
 
-public class TrieBitmapTest
+import java.util.Random;
+
+public class LeafBitmapNodeTest
     extends TestCase
 {
-    public void test()
+    public void testConstructors()
     {
-        TrieBitmap empty = TrieBitmap.of();
-        StandardJImmutableBitmapTests.verifyBitmap(empty);
-        StandardJImmutableBitmapTests.testSingleValue(empty);
-        StandardJImmutableBitmapTests.testRandom(empty);
+        for (int shift = 0; shift < 32; ++shift) {
+            LeafBitmapNode leaf = LeafBitmapNode.of(1 << shift);
+            assertEquals((1 << shift) >> 6, leaf.getShiftedIndex());
+            assertEquals(true, leaf.getValue(6, 1 << shift));
+        }
+        for (int index = 0; index < 32; ++index) {
+            LeafBitmapNode leaf = LeafBitmapNode.of(index);
+            assertEquals(0, leaf.getShiftedIndex());
+            assertEquals(true, leaf.getValue(6, index));
+        }
+    }
+
+    public void testRandom()
+    {
+        Random random = new Random();
+        for (int loops = 0; loops < 100; ++loops) {
+            int index = random.nextInt();
+            LeafBitmapNode leaf = LeafBitmapNode.of(index);
+            assertEquals(true, leaf.getValue(BitmapNode.shiftForIndex(index), index));
+        }
     }
 }

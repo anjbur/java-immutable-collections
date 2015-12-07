@@ -94,14 +94,7 @@ public class LeafBitmapNode
     public Holder<Boolean> find(int shift,
                                 int index)
     {
-        assert shift >= 1;
-        if (this.shiftedIndex != index >> this.shift) {
-            return Holders.of(false);
-        } else {
-            long bit = 1 << (index & 0x3f);
-            boolean containsIndex = ((value & bit) != 0);
-            return Holders.of(containsIndex);
-        }
+        return Holders.of(getValue(shift, index));
     }
 
 
@@ -119,7 +112,7 @@ public class LeafBitmapNode
             }
         } else {
             assert shift >= 0;
-            return SingleBranchBitmapNode.forIndex(shift, this.shiftedIndex, this).assign(shift, index);
+            return SingleBranchBitmapNode.forIndex(shift, this.shiftedIndex << 6, this).assign(shift, index);
         }
     }
 
@@ -133,6 +126,11 @@ public class LeafBitmapNode
     public boolean isLeaf()
     {
         return true;
+    }
+
+    public int getShiftedIndex()
+    {
+        return shiftedIndex;
     }
 
     @Override

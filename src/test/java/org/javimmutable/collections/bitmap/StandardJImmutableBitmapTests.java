@@ -75,7 +75,7 @@ public class StandardJImmutableBitmapTests
         bitmap = bitmap.insert(2048);
         valuesAdded = valuesAdded.insert(2048);
         verifyAddedValues(bitmap, valuesAdded);
-/*
+
         bitmap = bitmap.insert(32768);
         valuesAdded = valuesAdded.insert(32768);
         verifyAddedValues(bitmap, valuesAdded);
@@ -84,9 +84,9 @@ public class StandardJImmutableBitmapTests
         valuesAdded = valuesAdded.insert(33554432);
         verifyAddedValues(bitmap, valuesAdded);
 
-        bitmap = bitmap.insert(1073741824);
-        valuesAdded = valuesAdded.insert(1073741824);
-        verifyAddedValues(bitmap, valuesAdded);*/
+        bitmap = bitmap.insert(1073741924);
+        valuesAdded = valuesAdded.insert(1073741924);
+        verifyAddedValues(bitmap, valuesAdded);
 
         bitmap = bitmap.insert(-10);
         valuesAdded = valuesAdded.insert(-10);
@@ -110,15 +110,33 @@ public class StandardJImmutableBitmapTests
         }
     }
 
+    public static void testSingleValue(JImmutableBitmap template)
+    {
+        Random random = new Random();
+        for (int loop = 0; loop < 100; loop++) {
+            int index = random.nextInt();
+            JImmutableBitmap bitmap = template.insert(index);
+            assertEquals(true, bitmap.getValue(index));
+            int index2 = random.nextInt();
+            bitmap = bitmap.insert(index2);
+            assertEquals(true, bitmap.getValue(index));
+            assertEquals(true, bitmap.getValue(index2));
+        }
+    }
+
     public static void testRandom(JImmutableBitmap template)
     {
         JImmutableBitmap bitmap = template;
         JImmutableSet<Integer> valuesAdded = JImmutables.set();
         Random random = new Random();
-        for (int i = 0; i < 200; i++) {
+        for (int i = 0; i < 50; i++) {
             int index = random.nextInt();
             bitmap = bitmap.insert(index);
             valuesAdded = valuesAdded.insert(index);
+            if (valuesAdded.size() != i + 1) {
+                throw new AssertionFailedError();
+            }
+            assertEquals(true, bitmap.getValue(index));
             try {
                 verifyAddedValues(bitmap, valuesAdded);
             } catch (AssertionFailedError e) {
