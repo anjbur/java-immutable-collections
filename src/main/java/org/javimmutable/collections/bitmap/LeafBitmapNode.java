@@ -103,7 +103,7 @@ public class LeafBitmapNode
                              int index)
     {
         assert shift >= 1;
-        if (this.shiftedIndex == index >>> 6) {
+        if (this.shiftedIndex == index >> 6) {
             long bit = 1 << (index & 0x3f);
             if ((value & bit) != 0) {
                 return this;
@@ -111,7 +111,7 @@ public class LeafBitmapNode
                 return withValue(value | bit);
             }
         } else {
-            assert shift >= 0;
+            assert shift > 1;
             return SingleBranchBitmapNode.forIndex(shift, this.shiftedIndex << 6, this).assign(shift, index);
         }
     }
@@ -187,6 +187,6 @@ public class LeafBitmapNode
 
     private BitmapNode withValue(long newValue)
     {
-        return new LeafBitmapNode(shiftedIndex, newValue, shift);
+        return new LeafBitmapNode(shiftedIndex << 6, newValue, shift);
     }
 }

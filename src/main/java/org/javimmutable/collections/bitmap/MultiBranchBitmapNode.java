@@ -55,7 +55,7 @@ public class MultiBranchBitmapNode
                                   int bitmask,
                                   BitmapNode[] entries)
     {
-        assert shift >= 0;
+        assert shift >= 1;
         this.shift = shift;
         this.bitmask = bitmask;
         this.entries = entries;

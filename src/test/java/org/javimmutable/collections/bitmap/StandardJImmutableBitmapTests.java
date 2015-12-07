@@ -110,19 +110,6 @@ public class StandardJImmutableBitmapTests
         }
     }
 
-    public static void testSingleValue(JImmutableBitmap template)
-    {
-        Random random = new Random();
-        for (int loop = 0; loop < 100; loop++) {
-            int index = random.nextInt();
-            JImmutableBitmap bitmap = template.insert(index);
-            assertEquals(true, bitmap.getValue(index));
-            int index2 = random.nextInt();
-            bitmap = bitmap.insert(index2);
-            assertEquals(true, bitmap.getValue(index));
-            assertEquals(true, bitmap.getValue(index2));
-        }
-    }
 
     public static void testRandom(JImmutableBitmap template)
     {

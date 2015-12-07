@@ -36,11 +36,13 @@
 package org.javimmutable.collections.bitmap;
 
 import junit.framework.TestCase;
+import org.javimmutable.collections.JImmutableSet;
+import org.javimmutable.collections.util.JImmutables;
 
 import java.util.Random;
 
 public class LeafBitmapNodeTest
-    extends TestCase
+        extends TestCase
 {
     public void testConstructors()
     {
@@ -63,6 +65,23 @@ public class LeafBitmapNodeTest
             int index = random.nextInt();
             LeafBitmapNode leaf = LeafBitmapNode.of(index);
             assertEquals(true, leaf.getValue(BitmapNode.shiftForIndex(index), index));
+        }
+    }
+
+    public void testVarious()
+    {
+        JImmutableSet<Integer> valuesAdded = JImmutables.set();
+        BitmapNode node = LeafBitmapNode.of();
+        int baseIndex = 0xffffff00;
+        node = node.assign(BitmapNode.shiftForIndex(baseIndex | (0x20)), baseIndex | (0x20));
+        valuesAdded = valuesAdded.insert(baseIndex | (0x20));
+        assertEquals(true, node.getValue(BitmapNode.shiftForIndex(baseIndex | (0x20)), baseIndex | (0x20)));
+        node = node.assign(BitmapNode.shiftForIndex(baseIndex | (0x30)), baseIndex | (0x30));
+        valuesAdded = valuesAdded.insert(baseIndex | (0x30));
+
+        //check for all values
+        for (Integer index : valuesAdded) {
+            assertEquals(true, node.getValue(BitmapNode.shiftForIndex(index), index));
         }
     }
 }

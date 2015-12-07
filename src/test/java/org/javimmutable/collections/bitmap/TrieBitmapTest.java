@@ -36,15 +36,49 @@
 package org.javimmutable.collections.bitmap;
 
 import junit.framework.TestCase;
+import org.javimmutable.collections.JImmutableBitmap;
+import org.javimmutable.collections.JImmutableSet;
+import org.javimmutable.collections.util.JImmutables;
 
 public class TrieBitmapTest
-    extends TestCase
+        extends TestCase
 {
     public void test()
     {
         TrieBitmap empty = TrieBitmap.of();
         StandardJImmutableBitmapTests.verifyBitmap(empty);
-        StandardJImmutableBitmapTests.testSingleValue(empty);
         StandardJImmutableBitmapTests.testRandom(empty);
+        verifyTrieBitmap();
+    }
+
+    public void verifyTrieBitmap()
+    {
+        JImmutableBitmap bitmap = TrieBitmap.of();
+        JImmutableSet<Integer> valuesAdded = JImmutables.set();
+
+        //add FullBranchBitmapNode
+        int shift = 11;
+        for (int i = 0; i < 32; i++) {
+            int index = i << shift;
+            bitmap = bitmap.insert(index);
+            valuesAdded = valuesAdded.insert(index);
+        }
+        //add MultiBranchBitmapNode
+
+        shift = 16;
+        for (int i = 0; i < 32; i += 2) {
+            int index = i << shift;
+            bitmap = bitmap.insert(index);
+            valuesAdded = valuesAdded.insert(index);
+        }
+
+        //add SingleBranchBitmapNodes
+        bitmap = bitmap.insert(0xffffff20);
+        valuesAdded = valuesAdded.insert(0xffffff20);
+
+        //check for all values
+        for (Integer index : valuesAdded) {
+            assertEquals(true, bitmap.getValue(index));
+        }
     }
 }
