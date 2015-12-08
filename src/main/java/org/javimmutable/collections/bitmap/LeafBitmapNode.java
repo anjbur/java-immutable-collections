@@ -181,8 +181,7 @@ public class LeafBitmapNode
 
     private int getHashCode(long value)
     {
-        Long valueLong = new Long(value);
-        return valueLong.hashCode();
+        return ((Long)value).hashCode();
     }
 
     private BitmapNode withValue(long newValue)

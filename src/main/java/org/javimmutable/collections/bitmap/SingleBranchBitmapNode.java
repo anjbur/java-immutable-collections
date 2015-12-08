@@ -149,20 +149,4 @@ public class SingleBranchBitmapNode
         assert newChild.isLeaf() || (newChild.getShift() == (shift - 5));
         return (newChild == child) ? this : new SingleBranchBitmapNode(shift, branchIndex, newChild);
     }
-
-    private BitmapNode selectNodeForDeleteResult(int shift,
-                                                 int branchIndex,
-                                                 BitmapNode newChild)
-    {
-        if (newChild == child) {
-            return this;
-        } else if (newChild.isEmpty()) {
-            return of();
-        } else if (newChild.isLeaf()) {
-            return newChild;
-        } else {
-            assert newChild.getShift() == (shift - 5);
-            return new SingleBranchBitmapNode(shift, branchIndex, newChild);
-        }
-    }
 }

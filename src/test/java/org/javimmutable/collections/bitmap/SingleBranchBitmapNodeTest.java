@@ -38,8 +38,6 @@ package org.javimmutable.collections.bitmap;
 
 import junit.framework.TestCase;
 import org.javimmutable.collections.Holders;
-import org.javimmutable.collections.JImmutableSet;
-import org.javimmutable.collections.util.JImmutables;
 
 public class SingleBranchBitmapNodeTest
     extends TestCase

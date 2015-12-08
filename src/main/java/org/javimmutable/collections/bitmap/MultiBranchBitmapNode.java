@@ -44,9 +44,6 @@ import javax.annotation.concurrent.Immutable;
 public class MultiBranchBitmapNode
         extends BitmapNode
 {
-    // used by SignedOrderCursorSource to determine which index to use next
-    private static final IndexList SIGNED_INDEX_LIST = new IndexList(2, new IndexList(3, new IndexList(0, new IndexList(1, null))));
-
     private final int shift;
     private final int bitmask;
     private final BitmapNode[] entries;
@@ -232,50 +229,6 @@ public class MultiBranchBitmapNode
         }
     }
 
-    private BitmapNode selectNodeForDeleteResult(int shift,
-                                                 int bit,
-                                                 int bitmask,
-                                                 BitmapNode[] entries,
-                                                 int childIndex,
-                                                 BitmapNode child,
-                                                 BitmapNode newChild)
-    {
-        if (newChild.isEmpty()) {
-            switch (entries.length) {
-            case 1:
-                return of();
-            case 2: {
-                final int newBitmask = bitmask & ~bit;
-                final int remainingIndex = Integer.numberOfTrailingZeros(newBitmask);
-                final BitmapNode remainingChild = entries[realIndex(bitmask, 1 << remainingIndex)];
-                if (remainingChild.isLeaf()) {
-                    return remainingChild;
-                } else {
-                    return SingleBranchBitmapNode.forBranchIndex(shift, remainingIndex, remainingChild);
-                }
-            }
-            default: {
-                final int newLength = entries.length - 1;
-                final BitmapNode[] newArray = allocate(newLength);
-                System.arraycopy(entries, 0, newArray, 0, childIndex);
-                System.arraycopy(entries, childIndex + 1, newArray, childIndex, newLength - childIndex);
-                return new MultiBranchBitmapNode(shift, bitmask & ~bit, newArray);
-            }
-            }
-        } else {
-            return selectNodeForUpdateResult(shift, bitmask, childIndex, entries, child, newChild);
-        }
-    }
-
-
-    private IndexList findFirstIndex(IndexList next)
-    {
-        while ((next != null) && ((bitmask & next.bit) == 0)) {
-            next = next.next;
-        }
-        return next;
-    }
-
     private static int realIndex(int bitmask,
                                  int bit)
     {
@@ -283,21 +236,8 @@ public class MultiBranchBitmapNode
     }
 
     @SuppressWarnings("unchecked")
-    static <T> BitmapNode[] allocate(int size)
+    static BitmapNode[] allocate(int size)
     {
         return new BitmapNode[size];
-    }
-
-    private static class IndexList
-    {
-        private final int bit;
-        private final IndexList next;
-
-        private IndexList(int index,
-                          IndexList next)
-        {
-            this.bit = 1 << index;
-            this.next = next;
-        }
     }
 }

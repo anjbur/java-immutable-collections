@@ -51,7 +51,6 @@ public class FullBranchBitmapNode
         this.enBitmaps = enBitmaps;
     }
 
-
     @Override
     public boolean isEmpty()
     {
