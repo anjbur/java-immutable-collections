@@ -54,6 +54,9 @@ public abstract class BitmapNode
     public abstract BitmapNode assign(int shift,
                                       int index);
 
+    public abstract BitmapNode delete(int shift,
+                                      int index);
+
     public abstract int getShift();
 
     public abstract boolean isLeaf();

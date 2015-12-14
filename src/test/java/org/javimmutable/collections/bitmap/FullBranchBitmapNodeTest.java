@@ -36,10 +36,6 @@
 package org.javimmutable.collections.bitmap;
 
 import junit.framework.TestCase;
-import org.javimmutable.collections.common.IndexedList;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class FullBranchBitmapNodeTest
         extends TestCase
