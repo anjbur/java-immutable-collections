@@ -93,7 +93,7 @@ public class SingleBranchBitmapNode
     {
         assert this.shift == shift;
         final int branchIndex = (index >>> shift) & 0x1f;
-        return (this.branchIndex == branchIndex) ? child.find(shift - 5, index) : Holders.<Boolean>of();
+        return (this.branchIndex == branchIndex) ? child.find(shift - 5, index) : Holders.of(false);
     }
 
 
