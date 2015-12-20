@@ -44,7 +44,7 @@ import javax.annotation.concurrent.Immutable;
 public class LeafBitmapNode
         extends BitmapNode
 {
-    private final int shiftedIndex; //25 bit integer
+    private final int shiftedIndex; //26 bit integer
     private final long value;
     private final int shift;
 
@@ -85,8 +85,8 @@ public class LeafBitmapNode
         if (this.shiftedIndex != (index >> 6)) {
             return false;
         } else {
-            long bitmask = 1 << (index & 0x3f);
-            return (value & bitmask) != 0;
+            long bit = 1 << (index & 0x3f);
+            return (value & bit) != 0;
         }
     }
 
