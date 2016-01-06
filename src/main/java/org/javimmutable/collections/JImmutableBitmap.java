@@ -41,4 +41,6 @@ public interface JImmutableBitmap
     JImmutableBitmap insert(int index);
 
     boolean getValue(int index);
+
+    JImmutableBitmap delete(int index);
 }

@@ -116,15 +116,16 @@ public class LeafBitmapNode
         }
     }
 
-    @Override
+    //@Override
     public BitmapNode delete(int shift,
                              int index)
     {
         assert shift >= 1;
         if (this.shiftedIndex == index >> 6) {
+
             return of();
         } else {
-            
+            return this;
         }
     }
 

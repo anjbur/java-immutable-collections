@@ -66,6 +66,11 @@ public class TrieBitmap
         return root.getShift() >= BitmapNode.shiftForIndex(index) && root.getValue(root.getShift(), index);
     }
 
+    public JImmutableBitmap delete(int index)
+    {
+        return of();
+    }
+
     public void checkInvariants()
     {
 

@@ -95,6 +95,28 @@ public class StandardJImmutableBitmapTests
         bitmap = bitmap.insert(-1073741824);
         valuesAdded = valuesAdded.insert(-1073741824);
         verifyAddedValues(bitmap, valuesAdded);
+
+        JImmutableSet<Integer> valuesDeleted = JImmutables.set();
+        for (Integer value : valuesAdded) {
+            bitmap = bitmap.delete(value);
+            valuesDeleted = valuesDeleted.insert(value);
+            valuesAdded = valuesAdded.delete(value);
+            verifyAddedValues(bitmap, valuesAdded);
+            verifyDeletedValues(bitmap, valuesDeleted);
+        }
+    }
+
+    private static void verifyDeletedValues(JImmutableBitmap bitmap,
+                                            JImmutableSet<Integer> valuesDeleted)
+    {
+        for (Integer value : valuesDeleted) {
+            try {
+                assertEquals(false, bitmap.getValue(value));
+            } catch (AssertionFailedError e) {
+                System.out.println("value : " + value);
+                throw e;
+            }
+        }
     }
 
     private static void verifyAddedValues(JImmutableBitmap bitmap,

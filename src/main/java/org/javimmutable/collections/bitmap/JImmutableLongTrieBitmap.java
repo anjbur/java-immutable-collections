@@ -67,6 +67,23 @@ public class JImmutableLongTrieBitmap
     }
 
     @Nonnull
+    public JImmutableBitmap delete(int index)
+    {
+        JImmutableArray<Long> newArray = array;
+        int arrayIndex = index >>> 6;
+        Long arrayElement = newArray.get(arrayIndex);
+        if (arrayElement == null || arrayElement == 0) {
+            return this;
+        }
+        long bit = 1 << (index & 0x3f);
+        arrayElement = arrayElement | ~bit;
+        JImmutableBitmap newBitmap = (arrayElement != 0) ? new JImmutableLongTrieBitmap(newArray.assign(arrayIndex, arrayElement)) :
+               new JImmutableLongTrieBitmap(newArray.delete(arrayIndex));
+        assert !newBitmap.getValue(index);
+        return newBitmap;
+    }
+
+    @Nonnull
     @Override
     public JImmutableBitmap insert(int index)
     {
