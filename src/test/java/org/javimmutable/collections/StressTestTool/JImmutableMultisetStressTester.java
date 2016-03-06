@@ -397,10 +397,8 @@ public class JImmutableMultisetStressTester
                 if (random.nextBoolean()) {
                     values = (JImmutableSet<String>)makeIntersectInsertable(tokens, random, multiList,
                                                                             expected, JImmutables.set(multiList));
-                    System.out.println("smaller");
                 } else {
                     values = makeBigIntersectValues(tokens, random, multiList, expected, JImmutables.multiset(multiList));
-                    System.out.println("bigger");
 
                 }
                 multiList = multiListSetIntersect(multiList);
@@ -413,9 +411,6 @@ public class JImmutableMultisetStressTester
             }
             verifyList(multiList, expected);
             if (intersects % 10 == 0) {
-                System.out.println(multi.occurrenceCount());
-                System.out.println(expected.size());
-                System.out.println(multiList.size());
                 verifyContents(multi, expected);
                 verifyOrder(multi, multiList);
             }
