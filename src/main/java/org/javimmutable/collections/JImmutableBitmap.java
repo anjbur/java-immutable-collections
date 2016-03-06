@@ -35,12 +35,23 @@
 
 package org.javimmutable.collections;
 
+import javax.annotation.Nonnull;
+
 public interface JImmutableBitmap
-    extends InvariantCheckable
+    extends InvariantCheckable,
+            Insertable<Integer>
 {
+    @Nonnull
     JImmutableBitmap insert(int index);
 
     boolean getValue(int index);
 
+    @Nonnull
+    Holder<Boolean> find(int index);
+
     JImmutableBitmap delete(int index);
+
+    int size();
+
+    boolean isEmpty();
 }

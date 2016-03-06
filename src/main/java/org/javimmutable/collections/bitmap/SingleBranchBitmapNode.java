@@ -112,6 +112,21 @@ public class SingleBranchBitmapNode
     }
 
     @Override
+    public BitmapNode delete(int shift,
+                             int index)
+    {
+        assert this.shift == shift;
+        final int branchIndex = (index >>> shift) & 0x1f;
+        if (this.branchIndex != branchIndex)
+        {
+            return this;
+        } else {
+            final BitmapNode newChild = child.delete(shift - 5, index);
+            return selectNodeForUpdateResult(shift, branchIndex, newChild);
+        }
+    }
+
+    @Override
     public int getShift()
     {
         return shift;

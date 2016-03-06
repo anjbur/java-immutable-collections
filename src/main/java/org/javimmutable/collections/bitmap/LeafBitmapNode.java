@@ -116,14 +116,18 @@ public class LeafBitmapNode
         }
     }
 
-    //@Override
+    @Override
     public BitmapNode delete(int shift,
                              int index)
     {
         assert shift >= 1;
         if (this.shiftedIndex == index >> 6) {
-
-            return of();
+            long bit = 1 << (index & 0x3f);
+            if ((value & bit) != 0) {
+                return withValue(value ^ bit);
+            } else {
+                return this;
+            }
         } else {
             return this;
         }
@@ -199,6 +203,10 @@ public class LeafBitmapNode
 
     private BitmapNode withValue(long newValue)
     {
-        return new LeafBitmapNode(shiftedIndex << 6, newValue, shift);
+        if (newValue != 0) {
+            return new LeafBitmapNode(shiftedIndex << 6, newValue, shift);
+        } else {
+            return new EmptyBitmapNode();
+        }
     }
 }

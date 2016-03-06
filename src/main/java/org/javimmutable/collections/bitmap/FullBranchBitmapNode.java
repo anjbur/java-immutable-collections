@@ -42,13 +42,13 @@ public class FullBranchBitmapNode
         extends BitmapNode
 {
     private final int shift;
-    private final BitmapNode[] enBitmaps;
+    private final BitmapNode[] entries;
 
     FullBranchBitmapNode(int shift,
-                         BitmapNode[] enBitmaps)
+                         BitmapNode[] entries)
     {
         this.shift = shift;
-        this.enBitmaps = enBitmaps;
+        this.entries = entries;
     }
 
     @Override
@@ -63,7 +63,7 @@ public class FullBranchBitmapNode
     {
         assert this.shift == shift;
         final int childIndex = (index >>> shift) & 0x1f;
-        return enBitmaps[childIndex].getValue(shift - 5, index);
+        return entries[childIndex].getValue(shift - 5, index);
     }
 
     @Override
@@ -72,7 +72,7 @@ public class FullBranchBitmapNode
     {
         assert this.shift == shift;
         final int childIndex = (index >>> shift) & 0x1f;
-        return enBitmaps[childIndex].find(shift - 5, index);
+        return entries[childIndex].find(shift - 5, index);
     }
 
 
@@ -82,7 +82,7 @@ public class FullBranchBitmapNode
     {
         assert this.shift == shift;
         final int childIndex = (index >>> shift) & 0x1f;
-        final BitmapNode child = enBitmaps[childIndex];
+        final BitmapNode child = entries[childIndex];
         final BitmapNode newChild = child.assign(shift - 5, index);
         if (newChild == child) {
             return this;
@@ -91,6 +91,22 @@ public class FullBranchBitmapNode
         }
     }
 
+    @Override
+    public BitmapNode delete(int shift,
+                             int index)
+    {
+        assert this.shift == shift;
+        final int childIndex = (index >>> shift) & 0x1f;
+        final BitmapNode child = entries[childIndex];
+        final BitmapNode newChild = child.delete(shift - 5, index);
+        if (newChild == child) {
+            return this;
+        } else if (newChild.isEmpty()) {
+            return MultiBranchBitmapNode.fullWithout(shift, entries, childIndex);
+        } else {
+            return createUpdatedEnBitmaps(shift, childIndex, newChild);
+        }
+    }
 
     @Override
     public int getShift()
@@ -110,7 +126,7 @@ public class FullBranchBitmapNode
                                               BitmapNode newChild)
     {
         assert newChild.isLeaf() || (newChild.getShift() == (shift - 5));
-        BitmapNode[] newEnBitmaps = enBitmaps.clone();
+        BitmapNode[] newEnBitmaps = entries.clone();
         newEnBitmaps[childIndex] = newChild;
         return new FullBranchBitmapNode(shift, newEnBitmaps);
     }

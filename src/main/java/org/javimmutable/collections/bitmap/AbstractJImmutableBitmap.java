@@ -35,57 +35,31 @@
 
 package org.javimmutable.collections.bitmap;
 
-
+import org.javimmutable.collections.Holder;
+import org.javimmutable.collections.Holders;
 import org.javimmutable.collections.JImmutableBitmap;
 
-public class TrieBitmap
-    extends AbstractJImmutableBitmap
+import javax.annotation.Nonnull;
+
+public abstract class AbstractJImmutableBitmap
+    implements JImmutableBitmap
 {
-    private static final TrieBitmap EMPTY = new TrieBitmap(BitmapNode.of(), 0);
-    private final BitmapNode root;
-    private int size;
-
-    private TrieBitmap(BitmapNode root,
-                       int size)
+    @Override
+    @Nonnull
+    public Holder<Boolean> find(int index)
     {
-        this.root = root;
-        this.size = size;
+        return Holders.of(getValue(index));
     }
 
-    public static TrieBitmap of()
+    @Override
+    @Nonnull
+    public JImmutableBitmap insert(Integer index)
     {
-        return EMPTY;
+        return insert(index.intValue());
     }
 
-    public JImmutableBitmap insert(int index)
+    public boolean isEmpty()
     {
-        BitmapNode newRoot = root.paddedToMinimumDepthForShift(BitmapNode.shiftForIndex(index));
-        newRoot = newRoot.assign(newRoot.getShift(), index);
-        return (newRoot == root) ? this: new TrieBitmap(newRoot, size + 1);
-    }
-
-    public boolean getValue(int index)
-    {
-        return root.getShift() >= BitmapNode.shiftForIndex(index) && root.getValue(root.getShift(), index);
-    }
-
-    public JImmutableBitmap delete(int index)
-    {
-        if (root.getShift() < BitmapNode.shiftForIndex(index)) {
-            return this;
-        } else {
-            final BitmapNode newRoot = root.delete(root.getShift(), index).trimmedToMinimumDepth();
-            return (newRoot == root) ? this : new TrieBitmap(newRoot, size - 1);
-        }
-    }
-
-    public void checkInvariants()
-    {
-
-    }
-
-    public int size()
-    {
-        return size;
+        return size() == 0;
     }
 }

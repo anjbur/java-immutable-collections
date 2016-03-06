@@ -79,6 +79,13 @@ public class EmptyBitmapNode
     }
 
     @Override
+    public BitmapNode delete(int shift,
+                             int index)
+    {
+        return this;
+    }
+
+    @Override
     public int getShift()
     {
         return 0;

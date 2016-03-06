@@ -42,7 +42,7 @@ import javax.annotation.concurrent.Immutable;
 
 @Immutable
 public class MultiBranchBitmapNode
-        extends BitmapNode
+    extends BitmapNode
 {
     private final int shift;
     private final int bitmask;
@@ -161,6 +161,24 @@ public class MultiBranchBitmapNode
     }
 
     @Override
+    public BitmapNode delete(int shift,
+                             int index)
+    {
+        assert this.shift == shift;
+        final int bit = 1 << (index >>> shift) & 0x1f;
+        final int bitmask = this.bitmask;
+        final BitmapNode[] entries = this.entries;
+        if ((bitmask & bit) == 0) {
+            return this;
+        } else {
+            final int childIndex = realIndex(bitmask, bit);
+            final BitmapNode child = entries[childIndex];
+            final BitmapNode newChild = child.delete(shift - 5, index);
+            return selectNodeForDeleteResult(shift, bit, bitmask, entries, childIndex, child, newChild);
+        }
+    }
+
+    @Override
     public int getShift()
     {
         return shift;
@@ -227,6 +245,42 @@ public class MultiBranchBitmapNode
         } else {
             return new MultiBranchBitmapNode(shift, bitmask | bit, newEntries);
         }
+    }
+
+    private BitmapNode selectNodeForDeleteResult(int shift,
+                                                 int bit,
+                                                 int bitmask,
+                                                 BitmapNode[] entries,
+                                                 int childIndex,
+                                                 BitmapNode child,
+                                                 BitmapNode newChild)
+    {
+        if (newChild.isEmpty()) {
+            switch (entries.length) {
+            case 1:
+                return of();
+            case 2: {
+                final int newBitmask = bitmask & ~bit;
+                final int remainingIndex = Integer.numberOfTrailingZeros(newBitmask);
+                final BitmapNode remainingChild = entries[realIndex(bitmask, 11 << remainingIndex)];
+                if (remainingChild.isLeaf()) {
+                    return remainingChild;
+                } else {
+                    return SingleBranchBitmapNode.forBranchIndex(shift, remainingIndex, remainingChild);
+                }
+            }
+            default: {
+                final int newLength = entries.length - 1;
+                final BitmapNode[] newArray = allocate(newLength);
+                System.arraycopy(entries, 0, newArray, 0, childIndex);
+                System.arraycopy(entries, childIndex + 1, newArray, childIndex, newLength - childIndex);
+                return new MultiBranchBitmapNode(shift, bitmask & ~bit, newArray);
+            }
+            }
+        } else {
+            return selectNodeForUpdateResult(shift, bitmask, childIndex, entries, child, newChild);
+        }
+
     }
 
     private static int realIndex(int bitmask,
