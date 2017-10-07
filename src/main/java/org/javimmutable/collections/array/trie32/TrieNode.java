@@ -3,7 +3,7 @@
 // Burton Computer Corporation
 // http://www.burton-computer.com
 //
-// Copyright (c) 2014, Burton Computer Corporation
+// Copyright (c) 2017, Burton Computer Corporation
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -151,7 +151,7 @@ public abstract class TrieNode<T>
             return of();
 
         case 1:
-            return LeafTrieNode.of(index, source.get(offset));
+            return LeafTrieNode.<T>of(index, source.get(offset));
 
         case 32:
             return FullBranchTrieNode.fromSource(index, source, offset);

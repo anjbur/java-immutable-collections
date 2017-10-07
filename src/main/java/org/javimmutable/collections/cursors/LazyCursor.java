@@ -3,7 +3,7 @@
 // Burton Computer Corporation
 // http://www.burton-computer.com
 //
-// Copyright (c) 2014, Burton Computer Corporation
+// Copyright (c) 2017, Burton Computer Corporation
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -82,7 +82,7 @@ public class LazyCursor<V>
     }
 
     /**
-     * Creates a new LazyPersistentIterator using the specified factory.
+     * Creates a new LazyCursor using the specified factory.
      *
      * @param factory a Func0 capable of creating a real Cursor
      */
@@ -92,9 +92,9 @@ public class LazyCursor<V>
     }
 
     /**
-     * Creates a new LazyPersistentIterator for the specified cursorable.
+     * Creates a new LazyCursor for the specified cursorable.
      *
-     * @param cursorable a PersistentIterable capable of producing a non-empty PersistentIterator
+     * @param cursorable a Cursorable capable of producing a non-empty LazyCursor
      */
     public static <V> LazyCursor<V> of(Cursorable<V> cursorable)
     {
@@ -102,12 +102,12 @@ public class LazyCursor<V>
     }
 
     /**
-     * Creates the real cursor using the factory and returns its next() method's result.
+     * Creates the real cursor using the factory and returns its start() method's result.
      * Thus when the lazy cursor creates the real cursor it always immediately calls its
      * start() method to start its iteration and get it into the state expected by the
      * caller of this method.
      *
-     * @return real cursor's next() value
+     * @return real cursor's start() value
      */
     @Nonnull
     @Override

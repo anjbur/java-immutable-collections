@@ -3,7 +3,7 @@
 // Burton Computer Corporation
 // http://www.burton-computer.com
 //
-// Copyright (c) 2014, Burton Computer Corporation
+// Copyright (c) 2017, Burton Computer Corporation
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -41,14 +41,14 @@ import org.javimmutable.collections.common.AbstractJImmutableSet;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 /**
  * JImmutableSet implementation built on top of a JImmutableInsertOrderMap.  During iteration
  * elements are returned in the same order they were inserted into the set.  Performance is
- * slower than hash or tree sets but should be sufficient or most algorithms where insert
+ * slower than hash or tree sets but should be sufficient for most algorithms where insert
  * order matters.
- *
- * @param <T>
  */
 @Immutable
 public class JImmutableInsertOrderSet<T>
@@ -82,8 +82,8 @@ public class JImmutableInsertOrderSet<T>
     }
 
     @Override
-    protected JImmutableMap<T, Boolean> emptyMap()
+    protected Set<T> emptyMutableSet()
     {
-        return JImmutableInsertOrderMap.of();
+        return new LinkedHashSet<T>();
     }
 }

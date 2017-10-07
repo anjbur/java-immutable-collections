@@ -3,7 +3,7 @@
 // Burton Computer Corporation
 // http://www.burton-computer.com
 //
-// Copyright (c) 2014, Burton Computer Corporation
+// Copyright (c) 2017, Burton Computer Corporation
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -42,6 +42,8 @@ import org.javimmutable.collections.common.AbstractJImmutableSet;
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
 import java.util.Comparator;
+import java.util.Set;
+import java.util.TreeSet;
 
 @Immutable
 public class JImmutableTreeSet<T>
@@ -94,8 +96,8 @@ public class JImmutableTreeSet<T>
     }
 
     @Override
-    protected JImmutableMap<T, Boolean> emptyMap()
+    protected Set<T> emptyMutableSet()
     {
-        return JImmutableTreeMap.of(comparator);
+        return new TreeSet<T>(comparator);
     }
 }

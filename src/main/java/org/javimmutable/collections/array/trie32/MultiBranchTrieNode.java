@@ -3,7 +3,7 @@
 // Burton Computer Corporation
 // http://www.burton-computer.com
 //
-// Copyright (c) 2014, Burton Computer Corporation
+// Copyright (c) 2017, Burton Computer Corporation
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -107,7 +107,7 @@ public class MultiBranchTrieNode<T>
     {
         final TrieNode<T>[] entries = allocate(size);
         for (int i = 0; i < size; ++i) {
-            entries[i] = LeafTrieNode.of(index++, source.get(offset++));
+            entries[i] = LeafTrieNode.<T>of(index++, source.get(offset++));
         }
         final int bitmask = (size == 32) ? -1 : ((1 << size) - 1);
         return new MultiBranchTrieNode<T>(0, bitmask, entries);

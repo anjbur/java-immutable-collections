@@ -3,7 +3,7 @@
 // Burton Computer Corporation
 // http://www.burton-computer.com
 //
-// Copyright (c) 2014, Burton Computer Corporation
+// Copyright (c) 2017, Burton Computer Corporation
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -36,15 +36,15 @@
 package org.javimmutable.collections.tree_list;
 
 import org.javimmutable.collections.Cursor;
-import org.javimmutable.collections.cursors.LazyCursor;
-import org.javimmutable.collections.cursors.MultiCursor;
+import org.javimmutable.collections.cursors.LazyMultiCursor;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
 
+@Deprecated
 @Immutable
 public class TwoNode<T>
-        extends TreeNode<T>
+    extends TreeNode<T>
 {
     private final TreeNode<T> left;
     private final TreeNode<T> right;
@@ -215,7 +215,10 @@ public class TwoNode<T>
     @Nonnull
     public Cursor<T> cursor()
     {
-        return MultiCursor.of(LazyCursor.of(left), LazyCursor.of(right));
+        return LazyMultiCursor.<T>builder(2)
+            .insert(left)
+            .insert(right)
+            .cursor();
     }
 
     private UpdateResult<T> updateLeft(UpdateResult<T> result)

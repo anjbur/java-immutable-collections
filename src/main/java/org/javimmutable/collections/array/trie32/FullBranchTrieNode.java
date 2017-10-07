@@ -3,7 +3,7 @@
 // Burton Computer Corporation
 // http://www.burton-computer.com
 //
-// Copyright (c) 2014, Burton Computer Corporation
+// Copyright (c) 2017, Burton Computer Corporation
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -40,6 +40,7 @@ import org.javimmutable.collections.Func1;
 import org.javimmutable.collections.Holder;
 import org.javimmutable.collections.Indexed;
 import org.javimmutable.collections.JImmutableMap;
+import org.javimmutable.collections.common.IndexedArray;
 import org.javimmutable.collections.common.MutableDelta;
 import org.javimmutable.collections.cursors.MultiTransformCursor;
 import org.javimmutable.collections.cursors.StandardCursor;
@@ -48,7 +49,7 @@ import javax.annotation.concurrent.Immutable;
 
 @Immutable
 public class FullBranchTrieNode<T>
-        extends TrieNode<T>
+    extends TrieNode<T>
 {
     private final int shift;
     private final TrieNode<T>[] entries;
@@ -67,7 +68,7 @@ public class FullBranchTrieNode<T>
         assert (source.size() - offset) >= 32;
         TrieNode<T>[] entries = MultiBranchTrieNode.allocate(32);
         for (int i = 0; i < 32; ++i) {
-            entries[i] = LeafTrieNode.of(index++, source.get(offset++));
+            entries[i] = LeafTrieNode.<T>of(index++, source.get(offset++));
         }
         return new FullBranchTrieNode<T>(0, entries);
     }
@@ -165,13 +166,7 @@ public class FullBranchTrieNode<T>
         final int childIndex = (index >>> shift) & 0x1f;
         final TrieNode<T> child = entries[childIndex];
         final TrieNode<T> newChild = child.delete(shift - 5, index, sizeDelta);
-        if (newChild == child) {
-            return this;
-        } else if (newChild.isEmpty()) {
-            return MultiBranchTrieNode.fullWithout(shift, entries, childIndex);
-        } else {
-            return createUpdatedEntries(shift, childIndex, newChild);
-        }
+        return createDeleteResultNode(shift, childIndex, child, newChild);
     }
 
     @Override
@@ -185,13 +180,7 @@ public class FullBranchTrieNode<T>
         final int childIndex = (index >>> shift) & 0x1f;
         final TrieNode<T> child = entries[childIndex];
         final TrieNode<T> newChild = child.delete(shift - 5, index, key, transforms, sizeDelta);
-        if (newChild == child) {
-            return this;
-        } else if (newChild.isEmpty()) {
-            return MultiBranchTrieNode.fullWithout(shift, entries, childIndex);
-        } else {
-            return createUpdatedEntries(shift, childIndex, newChild);
-        }
+        return createDeleteResultNode(shift, childIndex, child, newChild);
     }
 
     @Override
@@ -209,40 +198,43 @@ public class FullBranchTrieNode<T>
     @Override
     public Cursor<JImmutableMap.Entry<Integer, T>> anyOrderEntryCursor()
     {
-        return MultiTransformCursor.of(StandardCursor.of(new CursorSource()), new Func1<TrieNode<T>, Cursor<JImmutableMap.Entry<Integer, T>>>()
-        {
-            @Override
-            public Cursor<JImmutableMap.Entry<Integer, T>> apply(TrieNode<T> node)
-            {
-                return node.anyOrderEntryCursor();
-            }
-        });
+        return MultiTransformCursor.of(StandardCursor.of(IndexedArray.retained(entries)),
+                                       new Func1<TrieNode<T>, Cursor<JImmutableMap.Entry<Integer, T>>>()
+                                       {
+                                           @Override
+                                           public Cursor<JImmutableMap.Entry<Integer, T>> apply(TrieNode<T> node)
+                                           {
+                                               return node.anyOrderEntryCursor();
+                                           }
+                                       });
     }
 
     @Override
     public Cursor<T> anyOrderValueCursor()
     {
-        return MultiTransformCursor.of(StandardCursor.of(new CursorSource()), new Func1<TrieNode<T>, Cursor<T>>()
-        {
-            @Override
-            public Cursor<T> apply(TrieNode<T> node)
-            {
-                return node.anyOrderValueCursor();
-            }
-        });
+        return MultiTransformCursor.of(StandardCursor.of(IndexedArray.retained(entries)),
+                                       new Func1<TrieNode<T>, Cursor<T>>()
+                                       {
+                                           @Override
+                                           public Cursor<T> apply(TrieNode<T> node)
+                                           {
+                                               return node.anyOrderValueCursor();
+                                           }
+                                       });
     }
 
     @Override
     public <K, V> Cursor<JImmutableMap.Entry<K, V>> anyOrderEntryCursor(final Transforms<T, K, V> transforms)
     {
-        return MultiTransformCursor.of(StandardCursor.of(new CursorSource()), new Func1<TrieNode<T>, Cursor<JImmutableMap.Entry<K, V>>>()
-        {
-            @Override
-            public Cursor<JImmutableMap.Entry<K, V>> apply(TrieNode<T> node)
-            {
-                return node.anyOrderEntryCursor(transforms);
-            }
-        });
+        return MultiTransformCursor.of(StandardCursor.of(IndexedArray.retained(entries)),
+                                       new Func1<TrieNode<T>, Cursor<JImmutableMap.Entry<K, V>>>()
+                                       {
+                                           @Override
+                                           public Cursor<JImmutableMap.Entry<K, V>> apply(TrieNode<T> node)
+                                           {
+                                               return node.anyOrderEntryCursor(transforms);
+                                           }
+                                       });
     }
 
     private TrieNode<T> createUpdatedEntries(int shift,
@@ -255,37 +247,17 @@ public class FullBranchTrieNode<T>
         return new FullBranchTrieNode<T>(shift, newEntries);
     }
 
-    private class CursorSource
-            implements StandardCursor.Source<TrieNode<T>>
+    private TrieNode<T> createDeleteResultNode(int shift,
+                                               int childIndex,
+                                               TrieNode<T> child,
+                                               TrieNode<T> newChild)
     {
-        private final int index;
-
-        private CursorSource()
-        {
-            this(0);
-        }
-
-        private CursorSource(int index)
-        {
-            this.index = index;
-        }
-
-        @Override
-        public boolean atEnd()
-        {
-            return index >= entries.length;
-        }
-
-        @Override
-        public TrieNode<T> currentValue()
-        {
-            return entries[index];
-        }
-
-        @Override
-        public StandardCursor.Source<TrieNode<T>> advance()
-        {
-            return atEnd() ? this : new CursorSource(index + 1);
+        if (newChild == child) {
+            return this;
+        } else if (newChild.isEmpty()) {
+            return MultiBranchTrieNode.fullWithout(shift, entries, childIndex);
+        } else {
+            return createUpdatedEntries(shift, childIndex, newChild);
         }
     }
 }

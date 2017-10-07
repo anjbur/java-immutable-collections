@@ -3,7 +3,7 @@
 // Burton Computer Corporation
 // http://www.burton-computer.com
 //
-// Copyright (c) 2014, Burton Computer Corporation
+// Copyright (c) 2017, Burton Computer Corporation
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -44,7 +44,7 @@ import javax.annotation.concurrent.Immutable;
  */
 @Immutable
 public class IndexedArray<T>
-        implements Indexed<T>
+    implements Indexed<T>
 {
     private final T[] values;
 
@@ -52,10 +52,6 @@ public class IndexedArray<T>
      * Produces an instance using a clone of the specified array to ensure that changes to the array
      * will not influence the values returned by the instance's methods.  This is generally preferred
      * to the unsafe() constructor.
-     *
-     * @param values
-     * @param <T>
-     * @return
      */
     public static <T> IndexedArray<T> copied(T[] values)
     {
@@ -67,10 +63,6 @@ public class IndexedArray<T>
      * changes to the array will cause changes to this instance's values.  However this can be useful
      * when performance is important and the instance will not be shared or retained beyond a single
      * method scope.
-     *
-     * @param values
-     * @param <T>
-     * @return
      */
     public static <T> IndexedArray<T> retained(T[] values)
     {

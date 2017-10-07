@@ -3,7 +3,7 @@
 // Burton Computer Corporation
 // http://www.burton-computer.com
 //
-// Copyright (c) 2014, Burton Computer Corporation
+// Copyright (c) 2017, Burton Computer Corporation
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -41,6 +41,8 @@ import org.javimmutable.collections.common.AbstractJImmutableSet;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
+import java.util.HashSet;
+import java.util.Set;
 
 @Immutable
 public class JImmutableHashSet<T>
@@ -74,8 +76,8 @@ public class JImmutableHashSet<T>
     }
 
     @Override
-    protected JImmutableMap<T, Boolean> emptyMap()
+    protected Set<T> emptyMutableSet()
     {
-        return JImmutableHashMap.of();
+        return new HashSet<T>();
     }
 }

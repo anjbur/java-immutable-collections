@@ -3,7 +3,7 @@
 // Burton Computer Corporation
 // http://www.burton-computer.com
 //
-// Copyright (c) 2014, Burton Computer Corporation
+// Copyright (c) 2017, Burton Computer Corporation
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,9 @@
 package org.javimmutable.collections.cursors;
 
 import org.javimmutable.collections.Cursor;
+import org.javimmutable.collections.Cursorable;
 import org.javimmutable.collections.Indexed;
+import org.javimmutable.collections.JImmutableMap;
 import org.javimmutable.collections.common.IteratorAdaptor;
 
 import javax.annotation.Nonnull;
@@ -63,8 +65,6 @@ public abstract class StandardCursor
      * Simple interface for classes that can iterate immediately (i.e. do not require a lazy start).
      * A Source must start already pointing at a current value.
      * Implementations of this interface must be immutable.
-     *
-     * @param <T>
      */
     public interface Source<T>
     {
@@ -86,9 +86,6 @@ public abstract class StandardCursor
 
     /**
      * Creates an empty cursor that has no values.
-     *
-     * @param <T>
-     * @return
      */
     @SuppressWarnings("unchecked")
     public static <T> Cursor<T> of()
@@ -99,10 +96,6 @@ public abstract class StandardCursor
     /**
      * Creates a Cursor for the given Source.  The Source must point to the first value (i.e. cannot be
      * be used for empty collections) to be iterated over.
-     *
-     * @param source
-     * @param <T>
-     * @return
      */
     public static <T> Cursor<T> of(Source<T> source)
     {
@@ -111,10 +104,6 @@ public abstract class StandardCursor
 
     /**
      * Creates a Cursor for the given Indexed.
-     *
-     * @param source
-     * @param <T>
-     * @return
      */
     public static <T> Cursor<T> of(Indexed<T> source)
     {
@@ -125,10 +114,6 @@ public abstract class StandardCursor
      * Creates a java.util.Iterator that iterates over values in the specified Source.
      * The Source must point to the first value (i.e. cannot be
      * be used for empty collections) to be iterated over.
-     *
-     * @param source
-     * @param <T>
-     * @return
      */
     public static <T> Iterator<T> iterator(Source<T> source)
     {
@@ -137,10 +122,6 @@ public abstract class StandardCursor
 
     /**
      * Creates a Cursor over a range of integers.  Useful for test purposes.
-     *
-     * @param low
-     * @param high
-     * @return
      */
     public static Cursor<Integer> forRange(int low,
                                            int high)
@@ -151,10 +132,6 @@ public abstract class StandardCursor
     /**
      * Utility method, useful in unit tests, that collects all of the values in the Cursor into a List
      * and returns the List.
-     *
-     * @param cursor
-     * @param <T>
-     * @return
      */
     public static <T> List<T> makeList(Cursor<T> cursor)
     {
@@ -165,9 +142,25 @@ public abstract class StandardCursor
         return answer;
     }
 
+    /**
+     * Creates a Cursorable that always returns an empty Cursor.
+     */
+    public static <T> Cursorable<T> emptyCursorable()
+    {
+        return new Cursorable<T>()
+        {
+            @Nonnull
+            @Override
+            public Cursor<T> cursor()
+            {
+                return of();
+            }
+        };
+    }
+
     @Immutable
     private static class Start<T>
-            extends AbstractStartCursor<T>
+        extends AbstractStartCursor<T>
     {
         private final Source<T> source;
 
@@ -192,7 +185,7 @@ public abstract class StandardCursor
 
     @Immutable
     private static class Started<T>
-            extends AbstractStartedCursor<T>
+        extends AbstractStartedCursor<T>
     {
         private final Source<T> source;
 
@@ -232,7 +225,7 @@ public abstract class StandardCursor
 
     @Immutable
     private static class EmptySource<T>
-            implements Source<T>
+        implements Source<T>
     {
         @Override
         public boolean atEnd()
@@ -255,7 +248,7 @@ public abstract class StandardCursor
 
     @Immutable
     static class RangeSource
-            implements Source<Integer>
+        implements Source<Integer>
     {
         private final int low;
         private final int high;
@@ -286,8 +279,47 @@ public abstract class StandardCursor
         }
     }
 
+    @Immutable
+    public static class RepeatingValueCursorSource<T>
+        implements StandardCursor.Source<T>
+    {
+        private int count;
+        private final T value;
+
+        public RepeatingValueCursorSource(JImmutableMap.Entry<T, Integer> entry)
+        {
+            this.count = entry.getValue();
+            this.value = entry.getKey();
+        }
+
+        private RepeatingValueCursorSource(int count,
+                                           T value)
+        {
+            this.count = count;
+            this.value = value;
+        }
+
+        @Override
+        public boolean atEnd()
+        {
+            return count <= 0;
+        }
+
+        @Override
+        public T currentValue()
+        {
+            return value;
+        }
+
+        @Override
+        public StandardCursor.Source<T> advance()
+        {
+            return new RepeatingValueCursorSource<T>(count - 1, value);
+        }
+    }
+
     private static class SourceIterator<T>
-            implements Iterator<T>
+        implements Iterator<T>
     {
         private Source<T> source;
 
@@ -322,7 +354,7 @@ public abstract class StandardCursor
 
     @Immutable
     private static class IndexedSource<T>
-            implements Source<T>
+        implements Source<T>
     {
         private final Indexed<T> list;
         private final int index;

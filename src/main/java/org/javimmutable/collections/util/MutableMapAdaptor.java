@@ -3,7 +3,7 @@
 // Burton Computer Corporation
 // http://www.burton-computer.com
 //
-// Copyright (c) 2014, Burton Computer Corporation
+// Copyright (c) 2017, Burton Computer Corporation
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -48,14 +48,14 @@ import java.util.Set;
 
 /**
  * When converting legacy code to use JImmutableMap there are sometimes objects that shared the mutable
- * version of their internal Map field with other classes.  This class serves as a an adaptor to allow
+ * version of their internal Map field with other classes.  This class serves as an adaptor to allow
  * this sharing to continue for a time after converting to JImmutableMap.  However the legacy code should
  * still be changed over time to eliminate the sharing of a mutable Map.
- * <p/>
+ * <p>
  * Since a JImmutableMap has to be replaced to reflect any changes to the map it can be difficult to
  * adapt one of them into a mutable Map.  Concrete classes derived from this class only have to implement
  * two methods, accessMap() and replaceMap() in order to implement the adaptor.
- * <p/>
+ * <p>
  * NOTE: this adaptor is NOT thread safe.  Do not use it in a multi-threaded environment.
  */
 public abstract class MutableMapAdaptor<K, V>

@@ -3,7 +3,7 @@
 // Burton Computer Corporation
 // http://www.burton-computer.com
 //
-// Copyright (c) 2014, Burton Computer Corporation
+// Copyright (c) 2017, Burton Computer Corporation
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -38,6 +38,7 @@ package org.javimmutable.collections.common;
 import org.javimmutable.collections.Cursor;
 import org.javimmutable.collections.Cursorable;
 import org.javimmutable.collections.JImmutableMap;
+import org.javimmutable.collections.JImmutableMultiset;
 import org.javimmutable.collections.JImmutableSet;
 import org.javimmutable.collections.cursors.Cursors;
 
@@ -65,6 +66,34 @@ public abstract class AbstractJImmutableSet<T>
     {
         JImmutableMap<T, Boolean> newMap = map.assign(value, Boolean.TRUE);
         return (newMap != map) ? create(newMap) : this;
+    }
+
+    @Override
+    @Nonnull
+    public JImmutableSet<T> insertAll(@Nonnull Cursorable<? extends T> values)
+    {
+        return union(values.cursor().iterator());
+    }
+
+    @Override
+    @Nonnull
+    public JImmutableSet<T> insertAll(@Nonnull Collection<? extends T> values)
+    {
+        return union(values.iterator());
+    }
+
+    @Override
+    @Nonnull
+    public JImmutableSet<T> insertAll(@Nonnull Cursor<? extends T> values)
+    {
+        return union(values.iterator());
+    }
+
+    @Override
+    @Nonnull
+    public JImmutableSet<T> insertAll(@Nonnull Iterator<? extends T> values)
+    {
+        return union(values);
     }
 
     @Override
@@ -167,14 +196,7 @@ public abstract class AbstractJImmutableSet<T>
     @Override
     public JImmutableSet<T> deleteAll(@Nonnull Cursor<? extends T> values)
     {
-        JImmutableMap<T, Boolean> newMap = map;
-        for (Cursor<? extends T> c = values.start(); c.hasValue(); c = c.next()) {
-            final T value = c.getValue();
-            if (value != null) {
-                newMap = newMap.delete(value);
-            }
-        }
-        return (newMap != map) ? create(newMap) : this;
+        return deleteAll(values.iterator());
     }
 
     @Nonnull
@@ -195,7 +217,7 @@ public abstract class AbstractJImmutableSet<T>
     @Override
     public JImmutableSet<T> union(@Nonnull Cursorable<? extends T> other)
     {
-        return union(other.cursor());
+        return union(other.cursor().iterator());
     }
 
     @Nonnull
@@ -209,14 +231,7 @@ public abstract class AbstractJImmutableSet<T>
     @Override
     public JImmutableSet<T> union(@Nonnull Cursor<? extends T> values)
     {
-        JImmutableMap<T, Boolean> newMap = map;
-        for (Cursor<? extends T> c = values.start(); c.hasValue(); c = c.next()) {
-            final T value = c.getValue();
-            if (value != null) {
-                newMap = newMap.assign(value, Boolean.TRUE);
-            }
-        }
-        return (newMap != map) ? create(newMap) : this;
+        return union(values.iterator());
     }
 
     @Nonnull
@@ -237,7 +252,7 @@ public abstract class AbstractJImmutableSet<T>
     @Override
     public JImmutableSet<T> intersection(@Nonnull Cursorable<? extends T> other)
     {
-        return intersection(other.cursor());
+        return intersection(other.cursor().iterator());
     }
 
     @Nonnull
@@ -251,18 +266,7 @@ public abstract class AbstractJImmutableSet<T>
     @Override
     public JImmutableSet<T> intersection(@Nonnull Cursor<? extends T> values)
     {
-        if (isEmpty()) {
-            return this;
-        }
-
-        JImmutableMap<T, Boolean> newMap = emptyMap();
-        for (Cursor<? extends T> c = values.start(); c.hasValue(); c = c.next()) {
-            final T value = c.getValue();
-            if ((value != null) && map.getValueOr(value, Boolean.FALSE)) {
-                newMap = newMap.assign(value, Boolean.TRUE);
-            }
-        }
-        return create(newMap);
+        return intersection(values.iterator());
     }
 
     @Nonnull
@@ -273,34 +277,33 @@ public abstract class AbstractJImmutableSet<T>
             return this;
         }
 
-        JImmutableMap<T, Boolean> newMap = emptyMap();
+        if (!values.hasNext()) {
+            return deleteAll();
+        }
+
+        Set<T> otherSet = emptyMutableSet();
         while (values.hasNext()) {
             final T value = values.next();
-            if ((value != null) && map.getValueOr(value, Boolean.FALSE)) {
-                newMap = newMap.assign(value, Boolean.TRUE);
+            if (value != null) {
+                otherSet.add(value);
             }
         }
-        return create(newMap);
+
+        JImmutableMap<T, Boolean> newMap = map;
+        for (JImmutableMap.Entry<T, Boolean> entry : map) {
+            if (!otherSet.contains(entry.getKey())) {
+                newMap = newMap.delete(entry.getKey());
+            }
+        }
+
+        return (newMap != map) ? create(newMap) : this;
     }
 
     @Nonnull
     @Override
-    public JImmutableSet<T> intersection(@Nonnull JImmutableSet<T> other)
+    public JImmutableSet<T> intersection(@Nonnull JImmutableSet<? extends T> other)
     {
-        if (isEmpty()) {
-            return this;
-        } else if (other.isEmpty()) {
-            return deleteAll();
-        }
-
-        JImmutableMap<T, Boolean> newMap = map;
-        for (Cursor<JImmutableMap.Entry<T, Boolean>> c = map.cursor().start(); c.hasValue(); c = c.next()) {
-            final T value = c.getValue().getKey();
-            if (!other.contains(value)) {
-                newMap = newMap.delete(value);
-            }
-        }
-        return (newMap != map) ? create(newMap) : this;
+        return intersection(other.getSet());
     }
 
     @Nonnull
@@ -311,16 +314,15 @@ public abstract class AbstractJImmutableSet<T>
             return this;
         } else if (other.isEmpty()) {
             return deleteAll();
-        }
-
-        JImmutableMap<T, Boolean> newMap = map;
-        for (Cursor<JImmutableMap.Entry<T, Boolean>> c = map.cursor().start(); c.hasValue(); c = c.next()) {
-            final T value = c.getValue().getKey();
-            if (!other.contains(value)) {
-                newMap = newMap.delete(value);
+        } else {
+            JImmutableMap<T, Boolean> newMap = map;
+            for (T value : map.keysCursor()) {
+                if (!other.contains(value)) {
+                    newMap = newMap.delete(value);
+                }
             }
+            return (newMap != map) ? create(newMap) : this;
         }
-        return (newMap != map) ? create(newMap) : this;
     }
 
     @Override
@@ -368,6 +370,8 @@ public abstract class AbstractJImmutableSet<T>
             return true;
         } else if (o == null) {
             return false;
+        } else if (o instanceof JImmutableMultiset) {
+            return o.equals(this);
         } else if (o instanceof JImmutableSet) {
             return getSet().equals(((JImmutableSet)o).getSet());
         } else {
@@ -381,18 +385,29 @@ public abstract class AbstractJImmutableSet<T>
         return Cursors.makeString(cursor());
     }
 
+    @Override
+    public void checkInvariants()
+    {
+        checkSetInvariants();
+    }
+
+    protected void checkSetInvariants()
+    {
+        map.checkInvariants();
+        for (JImmutableMap.Entry<T, Boolean> entry : map.cursor()) {
+            if (!entry.getValue()) {
+                throw new RuntimeException();
+            }
+        }
+    }
+
     /**
      * Implemented by derived classes to create a new instance of the appropriate class.
-     *
-     * @param map
-     * @return
      */
     protected abstract JImmutableSet<T> create(JImmutableMap<T, Boolean> map);
 
     /**
-     * Implemented by derived classes to create a new empty PersistentMap for use by retainAll()
-     *
-     * @return
+     * Implemented by derived classes to create a new empty Set
      */
-    protected abstract JImmutableMap<T, Boolean> emptyMap();
+    protected abstract Set<T> emptyMutableSet();
 }

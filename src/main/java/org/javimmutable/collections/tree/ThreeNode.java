@@ -3,7 +3,7 @@
 // Burton Computer Corporation
 // http://www.burton-computer.com
 //
-// Copyright (c) 2014, Burton Computer Corporation
+// Copyright (c) 2017, Burton Computer Corporation
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -38,8 +38,7 @@ package org.javimmutable.collections.tree;
 import org.javimmutable.collections.Cursor;
 import org.javimmutable.collections.Holder;
 import org.javimmutable.collections.JImmutableMap;
-import org.javimmutable.collections.cursors.LazyCursor;
-import org.javimmutable.collections.cursors.MultiCursor;
+import org.javimmutable.collections.cursors.LazyMultiCursor;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
@@ -48,7 +47,7 @@ import java.util.Comparator;
 
 @Immutable
 public class ThreeNode<K, V>
-        extends TreeNode<K, V>
+    extends TreeNode<K, V>
 {
     private final TreeNode<K, V> left;
     private final TreeNode<K, V> middle;
@@ -386,7 +385,11 @@ public class ThreeNode<K, V>
     @Nonnull
     public Cursor<JImmutableMap.Entry<K, V>> cursor()
     {
-        return MultiCursor.of(LazyCursor.of(left), LazyCursor.of(middle), LazyCursor.of(right));
+        return LazyMultiCursor.<JImmutableMap.Entry<K, V>>builder(3)
+            .insert(left)
+            .insert(middle)
+            .insert(right)
+            .cursor();
     }
 
     @SuppressWarnings("RedundantIfStatement")

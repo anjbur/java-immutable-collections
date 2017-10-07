@@ -3,7 +3,7 @@
 // Burton Computer Corporation
 // http://www.burton-computer.com
 //
-// Copyright (c) 2014, Burton Computer Corporation
+// Copyright (c) 2017, Burton Computer Corporation
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -55,7 +55,7 @@ import javax.annotation.concurrent.Immutable;
  * were inserted into the map.  Maintains two parallel data structures, one for sorting and
  * the other for storing entries.  Gets are approximately as fast as hash map gets but updates
  * are significantly slower.   Iteration is comparable to sorted map iteration.
- * <p/>
+ * <p>
  * Use a hash or tree map whenever possible but this class performs well enough for most cases
  * where insertion order is important to an algorithm.
  *
@@ -173,6 +173,12 @@ public class JImmutableInsertOrderMap<K, V>
                 return node;
             }
         });
+    }
+
+    @Override
+    public void checkInvariants()
+    {
+        //TODO: fix empty checkInvariants()
     }
 
     /**

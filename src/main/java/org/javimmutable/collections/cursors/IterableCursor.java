@@ -3,7 +3,7 @@
 // Burton Computer Corporation
 // http://www.burton-computer.com
 //
-// Copyright (c) 2014, Burton Computer Corporation
+// Copyright (c) 2017, Burton Computer Corporation
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -59,7 +59,7 @@ public abstract class IterableCursor
      * the Iterator and the collection it points to are not immutable outside factors can interfere with
      * the operation of this class.  In particular this class is not thread safe so the caller must take
      * precautions to synchronize access to the underlying collection.
-     * <p/>
+     * <p>
      * The Cursor retains information obtained from the Iterator so that multiple passes can be made over
      * the data, intermediate Cursor values can be saved and resumed for look-ahead etc.
      *
